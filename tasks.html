@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Tasks</title>
+<style>
+  body { font-family: "Poppins", sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
+  ul { list-style:none; padding:0; width:100%; max-width:500px; }
+  li { display:flex; justify-content:space-between; align-items:center; padding:10px; margin:5px 0; background:rgba(0,0,0,0.1); border-radius:8px; }
+  button { margin-left:5px; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; }
+  .complete-btn { background:green; color:white; }
+  .delete-btn { background:red; color:white; }
+  select { margin:10px; padding:5px; border-radius:5px; }
+  a { margin-top:20px; text-decoration:none; color:blue; }
+  .completed { text-decoration:line-through; opacity:0.7; }
+</style>
+</head>
+<body>
+
+<h1>All Your Tasks</h1>
+
+<label>Filter: </label>
+<select id="filter" onchange="filterTasks()">
+  <option value="all">All</option>
+  <option value="pending">Pending</option>
+  <option value="completed">Completed</option>
+</select>
+
+<ul id="taskList"></ul>
+<a href="index.html">Back to Add Task</a>
+
+<script>
+const taskList = document.getElementById("taskList");
+const filterSelect = document.getElementById("filter");
+
+document.addEventListener("DOMContentLoaded", loadTasks);
+
+function renderTask(task) {
+    const li = document.createElement("li");
+
+    const date = new Date(task.dateTime);
+    const taskContent = document.createElement("span");
+    taskContent.innerHTML = `${task.text} - ${date.toLocaleString()}`;
+    if(task.completed) taskContent.classList.add("completed");
+
+    // Complete button
+    const completeBtn = document.createElement("button");
+    completeBtn.textContent = task.completed ? "Undo" : "✔";
+    completeBtn.classList.add("complete-btn");
+    completeBtn.onclick = () => {
+        task.completed = !task.completed;
+        updateTask(task);
+        taskContent.classList.toggle("completed");
+        completeBtn.textContent = task.completed ? "Undo" : "✔";
+    };
+
+    // Delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "🗑";
+    deleteBtn.classList.add("delete-btn");
+    deleteBtn.onclick = () => {
+        removeTask(task.id);
+        li.remove();
+    };
+
+    li.appendChild(taskContent);
+    li.appendChild(completeBtn);
+    li.appendChild(deleteBtn);
+    taskList.appendChild(li);
+}
+
+function loadTasks() {
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.sort((a,b) => new Date(a.dateTime) - new Date(b.dateTime));
+    tasks.forEach(task => renderTask(task));
+}
+
+function updateTask(updatedTask) {
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks = tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    filterTasks();
+}
+
+function removeTask(taskId) {
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks = tasks.filter(t => t.id !== taskId);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function filterTasks() {
+    const filter = filterSelect.value;
+    taskList.innerHTML = "";
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.forEach(task => {
+        if(filter === "all" || (filter === "pending" && !task.completed) || (filter === "completed" && task.completed)) {
+            renderTask(task);
+        }
+    });
+}
+</script>
+
+</body>
+</html>
