@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login / Register</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f0f2f5;
+  }
+  .container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+  }
+  h1 { text-align:center; color:#333; }
+  input { width:100%; padding:12px; margin:8px 0; border-radius:6px; border:1px solid #ccc; font-size:16px; }
+  button { width:100%; padding:12px; margin-top:10px; border:none; border-radius:6px; background:#007bff; color:white; font-size:16px; cursor:pointer; }
+  button:hover { background:#0056b3; }
+  .toggle-btn { background:#6c757d; margin-top:5px; }
+  .toggle-btn:hover { background:#495057; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div id="loginForm">
+    <h1>Login</h1>
+    <input type="text" id="loginUsername" placeholder="Username">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button class="toggle-btn" onclick="showRegister()">Go to Register</button>
+  </div>
+
+  <div id="registerForm" class="hidden">
+    <h1>Register</h1>
+    <input type="text" id="regUsername" placeholder="Username">
+    <input type="password" id="regPassword" placeholder="Password">
+    <button onclick="register()">Register</button>
+    <button class="toggle-btn" onclick="showLogin()">Back to Login</button>
+  </div>
+</div>
+
+<script>
+function showRegister() {
+  document.getElementById("loginForm").classList.add("hidden");
+  document.getElementById("registerForm").classList.remove("hidden");
+}
+
+function showLogin() {
+  document.getElementById("registerForm").classList.add("hidden");
+  document.getElementById("loginForm").classList.remove("hidden");
+}
+
+function register() {
+  const username = document.getElementById("regUsername").value.trim();
+  const password = document.getElementById("regPassword").value;
+  if(!username || !password){ alert("Enter username & password"); return; }
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  if(users.find(u => u.username === username)){ alert("Username exists!"); return; }
+
+  users.push({username,password});
+  localStorage.setItem("users",JSON.stringify(users));
+  alert("Registration successful! You can login now.");
+  document.getElementById("regUsername").value = "";
+  document.getElementById("regPassword").value = "";
+  showLogin();
+}
+
+function login() {
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  const user = users.find(u => u.username === username && u.password === password);
+  if(user){
+    localStorage.setItem("loggedInUser",username);
+    window.location.href = "add-task.html"; // redirect to Add Task page
+  } else {
+    alert("Invalid username or password");
+  }
+}
+
+// Redirect if already logged in
+if(localStorage.getItem("loggedInUser")){
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
